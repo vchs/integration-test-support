@@ -9,7 +9,7 @@ module IntegrationExampleGroup
   include CcngClient
 
   def self.tmp_dir
-    @@tmp_dir ||= File.expand_path('tmp', SPEC_ROOT)
+    @@tmp_dir or raise "No tmp_dir set. Please set one with #{self.name}.tmp_dir="
   end
 
   def self.tmp_dir=(new_value)
