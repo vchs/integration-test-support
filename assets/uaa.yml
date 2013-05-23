@@ -1,0 +1,78 @@
+pid: /tmp/uaa.pid
+mbus: nats://localhost:4222
+jwt:
+  token:
+    signing-key: tokensecret
+    verification-key: tokensecret
+database:
+  driverClassName: org.postgresql.Driver
+  url: jdbc:postgresql://localhost:5432/uaadb
+  username: postgres
+  password:
+spring_profiles: postgresql
+oauth:
+  client:
+    override: true
+    autoapprove:
+     - space-mail
+     - cf
+     - my
+     - portal
+     - micro
+     - support-signon
+     - dummy-service-gateway
+  clients:
+    admin:
+      authorized-grant-types: client_credentials
+      authorities: clients.read,clients.write,clients.secret,uaa.admin
+      id: admin
+      secret: someadminsecret
+    login:
+      override: true
+      secret: loginsecret
+      id: login
+      authorized-grant-types: client_credentials
+      scope: uaa.none
+      authorities: oauth.login
+    cloud_controller:
+      authorized-grant-types: client_credentials
+      authorities: scim.read,scim.write,password.write
+      id: cloud_controller
+      secret: tokensecret
+      access-token-validity: 604800
+    portal:
+      override: true
+      id: portal
+      scope: openid,cloud_controller.read,cloud_controller.write,password.write
+      authorities: scim.write,scim.read,cloud_controller.read,cloud_controller.write,password.write,uaa.admin,uaa.resource,cloud_controller.admin
+      secret: portalsecret
+      authorized-grant-types: authorization_code,client_credentials
+      access-token-validity: 1209600
+      refresh-token-validity: 1209600
+    space-mail:
+      override: true
+      id: space-mail
+      authorities: scim.read,scim.write,cloud_controller.admin
+      secret: spacemail
+      authorized-grant-types: client_credentials
+      access-token-validity: 1209600
+      refresh-token-validity: 1209600
+    sso:
+      id: sso
+      scope: scim.write,scim.read,openid,cloud_controller.read,cloud_controller.write
+      authorities: portal.users.read
+      secret: ssosecret
+      authorized-grant-types: client_credentials,password
+      access-token-validity: 1209600
+      refresh-token-validity: 1209600
+    dummy-service-gateway:
+      id: dummy-service-gateway
+      authorized-grant-types: implicit
+      scope: cloud_controller.admin
+      authorities: uaa.none
+      access-token-validity: 604800
+scim:
+  users:
+    - sre@vmware.com|the_admin_pw|scim.write,scim.read,openid,cloud_controller.admin
+    - admin|the_admin_pw|scim.write,scim.read,openid,cloud_controller.admin
+    - joe@example.com|password|cloud_controller.read
