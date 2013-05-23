@@ -55,7 +55,7 @@ class ComponentRunner < Struct.new(:tmp_dir)
     }
   end
 
-  def asset(file_name, root = SPEC_ROOT)
+  def asset(file_name, root=File.expand_path('..', File.dirname(__FILE__)))
     File.expand_path(File.join(root, 'assets', file_name))
   end
 
