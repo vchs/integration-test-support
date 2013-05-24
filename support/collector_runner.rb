@@ -1,35 +1,7 @@
 require_relative 'component_runner'
 
 class CollectorRunner < ComponentRunner
-  # def set_reaction(blk)
-    # @reaction_blk = blk
-  # end
   attr_writer :reaction_blk
-
-  def start_fake_tsdb
-    add_thread Thread.new {
-      Socket.tcp_server_loop(4242) do |s, client_addrinfo|
-        begin
-          puts "Listening to port 4242 for Collector (OpenTSDB) data..."
-          while true
-            data = s.readline
-            if @reaction_blk
-              @reaction_blk.call(data)
-            else
-              # print data
-            end
-          end
-        rescue EOFError => e
-          puts "Stream closed! #{e}"
-        rescue => e
-          p e
-          puts e.backtrace.join("\n  ")
-        ensure
-          s.close
-        end
-      end
-    }
-  end
 
   def checkout_collector
     Dir.chdir tmp_dir do
@@ -54,7 +26,7 @@ class CollectorRunner < ComponentRunner
   end
 
   def start
-    thread = start_fake_tsdb
+    start_fake_tsdb
     checkout_collector unless $checked_out_collector
     Dir.chdir "#{tmp_dir}/vcap-tools/collector" do
       Bundler.with_clean_env do
@@ -64,5 +36,29 @@ class CollectorRunner < ComponentRunner
         )
       end
     end
+  end
+
+  private
+  def start_fake_tsdb
+    add_thread Thread.new {
+      Socket.tcp_server_loop(4242) do |s, client_addrinfo|
+        begin
+          puts "Listening to port 4242 for Collector (OpenTSDB) data..."
+          while true
+            data = s.readline
+            if @reaction_blk
+              @reaction_blk.call(data)
+            end
+          end
+        rescue EOFError => e
+          puts "Stream closed! #{e}"
+        rescue => e
+          p e
+          puts e.backtrace.join("\n  ")
+        ensure
+          s.close
+        end
+      end
+    }
   end
 end

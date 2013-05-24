@@ -13,7 +13,7 @@ class ComponentRunner < Struct.new(:tmp_dir)
       Process.wait(pid)
     end
     threads.reverse.each do |thread|
-      Thread.kill thread if thread
+      Thread.kill thread
     end
     clear_threads
 
