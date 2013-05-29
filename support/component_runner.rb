@@ -74,10 +74,6 @@ class ComponentRunner < Struct.new(:tmp_dir)
     File.expand_path(File.join(root, 'assets', file_name))
   end
 
-  def kill_listening_on_port(port)
-    `lsof -t -i:#{port} -sTCP:LISTEN | sort -rn | xargs kill`
-  end
-
   def wait_for_http_ready(label, port)
     print "Waiting for #{label}..."
     retries = 30
