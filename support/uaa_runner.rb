@@ -34,7 +34,7 @@ class UaaRunner < ComponentRunner
     end
   end
 
-  def backend_config_path
+  def asset_path
     File.expand_path("../assets", File.dirname(__FILE__))
   end
 
@@ -43,6 +43,6 @@ class UaaRunner < ComponentRunner
   end
 
   def setup_environment_variables
-    ENV["CLOUD_FOUNDRY_CONFIG_PATH"] = backend_config_path
+    ENV["CLOUD_FOUNDRY_CONFIG_PATH"] = asset_path
   end
 end
