@@ -17,6 +17,26 @@ module CcngClient
     make_ccng_request(:get, resource_path)
   end
 
+  def ccng_bind_service(instance_guid)
+    create_app_request = {
+      "space_guid" => space_guid,
+      "name" => "binding_test",
+      "instances" => 1,
+      "memory" => 256
+    }
+
+    app_guid = ccng_post("/v2/apps", create_app_request).fetch("metadata").fetch("guid")
+
+    create_binding_request = {
+      app_guid: app_guid, service_instance_guid: instance_guid
+    }
+    ccng_post("/v2/service_bindings", create_binding_request)
+  end
+
+  def ccng_unbind_service(cc_binding_guid)
+    ccng_delete("/v2/service_bindings/#{cc_binding_guid}")
+  end
+
   def ccng_auth_token
     token_coder = CF::UAA::TokenCoder.new(:audience_ids => "cloud_controller",
                                           :skey => "tokensecret", :pkey => nil)
