@@ -5,5 +5,5 @@ Shared code base to run Cloud Foundry integration tests, which involves many CF 
 
 Example
 ========================
-Please see the example test in 
-https://github.com/cloudfoundry/integration-test-support/blob/master/example/example_spec.rb
+Please see an example test in 
+[here](https://github.com/cloudfoundry/integration-test-support/blob/master/example/example_spec.rb) and [spec_helper](https://github.com/cloudfoundry/integration-test-support/blob/master/example/spec_helper.rb)
