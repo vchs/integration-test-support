@@ -1,3 +1,5 @@
+require 'httpclient'
+require 'yajl'
 module CcngClient
   UnsuccessfulResponse = Class.new(RuntimeError)
 

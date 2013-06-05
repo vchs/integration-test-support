@@ -1,3 +1,4 @@
+require 'socket'
 require_relative 'ccng_client'
 
 class ComponentRunner < Struct.new(:tmp_dir)
