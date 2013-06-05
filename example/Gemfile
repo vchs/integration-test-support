@@ -1,0 +1,7 @@
+gem 'nats'
+
+gem 'rspec'
+gem 'cf-uaa-lib'
+gem 'activesupport'
+gem 'httpclient'
+gem 'yajl-ruby'
