@@ -9,19 +9,23 @@ class ComponentRunner < Struct.new(:tmp_dir)
   end
 
   def stop
+    puts "Killing #{self.class.name}..."
     pids.reverse.each do |pid|
-      Process.kill "TERM", pid
-      Process.wait(pid)
+      begin
+        Timeout::timeout(3) do
+          Process.kill "TERM", pid
+          Process.wait(pid)
+        end
+      rescue Timeout::Error
+        Process.kill("KILL", pid) rescue Errno::ESRCH
+      end
     end
+    clear_pids
+    puts "Killing threads #{self.class.name}..."
     threads.reverse.each do |thread|
       Thread.kill thread
     end
     clear_threads
-
-    pids.reverse.each do |pid|
-      Process.kill("KILL", pid) rescue Errno::ESRCH
-    end
-    clear_pids
   end
 
   def threads
