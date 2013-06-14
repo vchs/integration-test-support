@@ -13,7 +13,11 @@ class CcngRunner < ComponentRunner
           unless `git status -s`.empty?
             raise 'There are outstanding changes in cloud controller. Need to set NO_CHECKOUT env'
           end
-          sh "git fetch && git reset --hard #{ENV['CC_BRANCH'] || "origin/master"} && git submodule update --init"
+          `git fetch`
+          if `git rev-parse HEAD` != `git rev-parse origin/HEAD`
+            raise 'There are local commits in cloud controller. Need to set NO_CHECKOUT env'
+          end
+          sh "git reset --hard #{ENV['CC_BRANCH'] || "origin/master"} && git submodule update --init"
         end
 
         Bundler.with_clean_env do
