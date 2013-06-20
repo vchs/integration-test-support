@@ -18,6 +18,7 @@ class CcngRunner < ComponentRunner
         end
 
         Bundler.with_clean_env do
+          puts "running bundle install"
           sh "bundle install >> #{tmp_dir}/log/bundle.out"
         end
       end
@@ -46,6 +47,7 @@ class CcngRunner < ComponentRunner
       end
       Bundler.with_clean_env do
         FileUtils.rm_f "/tmp/cloud_controller.db"
+        puts "running bundle exec rake db:migrate"
         sh "bundle exec rake db:migrate >> /dev/null"
         sh %q{sqlite3 /tmp/cloud_controller.db 'INSERT INTO quota_definitions(guid, created_at, name, non_basic_services_allowed, total_services, memory_limit) VALUES("test_quota", "2010-01-01", "free", 1, 100, 1024)'}
         add_pid Process.spawn "bundle exec ./bin/cloud_controller --config #{tmp_dir}/config/cloud_controller.yml", log_options(:cloud_controller)

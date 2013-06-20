@@ -57,14 +57,14 @@ class ComponentRunner < Struct.new(:tmp_dir)
     out = "#{tmp_dir}/log/#{name}.out"
     err = "#{tmp_dir}/log/#{name}.err"
 
-    File.open(out, 'w') do |f|
+    File.open(out, 'a') do |f|
       f.write("\n\n")
       f.write("="*80)
       f.write("\nStarting the service...\n")
       f.write("="*80)
       f.write("\n\n")
     end
-    File.open(err, 'w') do |f|
+    File.open(err, 'a') do |f|
       f.write("\n\n")
       f.write("="*80)
       f.write("\nStarting the service...\n")
