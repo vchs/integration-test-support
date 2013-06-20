@@ -4,20 +4,17 @@ class CcngRunner < ComponentRunner
   attr_reader :org_guid, :space_guid
 
   def checkout_ccng
-    ENV["CC_BRANCH"] ||= "origin/master"
+    cc_branch = ENV["CC_BRANCH"] || "origin/master"
+
     Dir.chdir tmp_dir do
       FileUtils.mkdir_p "log"
       sh "git clone --recursive git://github.com/cloudfoundry/cloud_controller_ng.git" unless Dir.exist?("cloud_controller_ng")
       Dir.chdir "cloud_controller_ng" do
         if ENV['NO_CHECKOUT'].nil? || ENV['NO_CHECKOUT'].empty?
-          unless `git status -s`.empty?
-            raise 'There are outstanding changes in cloud controller. Need to set NO_CHECKOUT env'
-          end
           `git fetch`
-          if `git rev-parse HEAD` != `git rev-parse origin/HEAD`
-            raise 'There are local commits in cloud controller. Need to set NO_CHECKOUT env'
-          end
-          sh "git reset --hard #{ENV['CC_BRANCH'] || "origin/master"} && git submodule update --init"
+          ensure_no_local_changes
+          ensure_no_local_commits(cc_branch)
+          sh "git reset --hard #{cc_branch} && git submodule update --init"
         end
 
         Bundler.with_clean_env do
@@ -57,6 +54,20 @@ class CcngRunner < ComponentRunner
     wait_for_http_ready("CCNG", 8181)
 
     setup_ccng_orgs_and_spaces
+  end
+
+  private
+
+  def ensure_no_local_changes
+    unless `git status -s`.empty?
+      raise 'There are outstanding changes in cloud controller. Need to set NO_CHECKOUT env'
+    end
+  end
+
+  def ensure_no_local_commits(cc_branch)
+    if `git merge-base HEAD #{cc_branch}` != `git rev-parse HEAD`
+      raise 'There unpushed commits in cloud controller. Need to set NO_CHECKOUT env'
+    end
   end
 
   def setup_ccng_orgs_and_spaces
