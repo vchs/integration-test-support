@@ -30,13 +30,13 @@ module IntegrationExampleGroup
       let(:mysql_root_connection) { component!(:mysql).mysql_root_connection }
       before :each do |example|
         (example.example.metadata[:components] || []).each do |component|
-          instance = component(component)
+          instance = component(component, example.example)
           instance.start
         end
       end
       after :each do |example|
         (example.example.metadata[:components] || []).reverse.each do |component|
-          component(component).stop
+          component!(component).stop
         end
       end
     end
@@ -50,10 +50,10 @@ module IntegrationExampleGroup
     component!(:ccng).org_guid
   end
 
-  def component(name)
+  def component(name, rspec_example)
     @components ||= {}
     FileUtils.mkdir_p(tmp_dir)
-    @components[name] ||= self.class.const_get("#{name.to_s.camelize}Runner").new(tmp_dir)
+    @components[name] ||= self.class.const_get("#{name.to_s.camelize}Runner").new(tmp_dir, rspec_example)
   end
 
   def component!(name)

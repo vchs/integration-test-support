@@ -1,7 +1,7 @@
 require 'socket'
 require_relative 'ccng_client'
 
-class ComponentRunner < Struct.new(:tmp_dir)
+class ComponentRunner < Struct.new(:tmp_dir, :rspec_example)
   include CcngClient
 
   def start
@@ -53,26 +53,26 @@ class ComponentRunner < Struct.new(:tmp_dir)
   end
 
   def log_options(name)
+    out = "#{name}.out"
+    err = "#{name}.err"
+
+    start_message = "\n\n#{'='*80}\nStarting the service...\n#{'='*80}\n\n"
+    append_to_log_file(out, start_message)
+    append_to_log_file(err, start_message)
+
+    {:out => log_file(out), :err => log_file(err)}
+  end
+
+  def log_file(name)
+    "#{tmp_dir}/log/#{name}"
+  end
+
+  def append_to_log_file(file_name, text)
     FileUtils.mkdir_p("#{tmp_dir}/log")
-    out = "#{tmp_dir}/log/#{name}.out"
-    err = "#{tmp_dir}/log/#{name}.err"
-
-    File.open(out, 'a') do |f|
-      f.write("\n\n")
-      f.write("="*80)
-      f.write("\nStarting the service...\n")
-      f.write("="*80)
-      f.write("\n\n")
+    file_location = log_file(file_name)
+    File.open(file_location, 'a') do |f|
+      f.write(text)
     end
-    File.open(err, 'a') do |f|
-      f.write("\n\n")
-      f.write("="*80)
-      f.write("\nStarting the service...\n")
-      f.write("="*80)
-      f.write("\n\n")
-    end
-
-    {:out => out, :err => err}
   end
 
   def asset(file_name, root=File.expand_path('..', File.dirname(__FILE__)))
