@@ -6,8 +6,8 @@ class CollectorRunner < ComponentRunner
   def checkout_collector
     Dir.chdir tmp_dir do
       FileUtils.mkdir_p "log"
-      sh "git clone --recursive git://github.com/cloudfoundry/vcap-tools.git" unless Dir.exist?("vcap-tools")
-      Dir.chdir "vcap-tools" do
+      sh "git clone --recursive git://github.com/cloudfoundry/collector.git" unless Dir.exist?("collector")
+      Dir.chdir "collector" do
         if ENV['NO_CHECKOUT'].nil? || ENV['NO_CHECKOUT'].empty?
           unless `git status -s`.empty?
             raise 'There are outstanding changes in collector. Need to set NO_CHECKOUT env'
@@ -16,9 +16,7 @@ class CollectorRunner < ComponentRunner
         end
 
         Bundler.with_clean_env do
-          Dir.chdir "collector" do
-            sh "bundle install >> #{tmp_dir}/log/bundle.out"
-          end
+          sh "bundle install >> #{tmp_dir}/log/bundle.out"
         end
       end
       $checked_out_collector = true
@@ -28,7 +26,7 @@ class CollectorRunner < ComponentRunner
   def start
     start_fake_tsdb
     checkout_collector unless $checked_out_collector
-    Dir.chdir "#{tmp_dir}/vcap-tools/collector" do
+    Dir.chdir "#{tmp_dir}/collector" do
       Bundler.with_clean_env do
         add_pid Process.spawn(
           {"CONFIG_FILE" => asset("collector.yml")},
