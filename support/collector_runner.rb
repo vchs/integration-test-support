@@ -9,10 +9,10 @@ class CollectorRunner < ComponentRunner
       sh "git clone --recursive git://github.com/cloudfoundry/collector.git" unless Dir.exist?("collector")
       Dir.chdir "collector" do
         if ENV['NO_CHECKOUT'].nil? || ENV['NO_CHECKOUT'].empty?
-          unless `git status -s`.empty?
-            raise 'There are outstanding changes in collector. Need to set NO_CHECKOUT env'
-          end
-          sh "git fetch && git reset --hard origin/master && git submodule update --init"
+          `git fetch`
+          ensure_no_local_changes
+          ensure_no_local_commits('origin/master')
+          sh "git reset --hard origin/master && git submodule update --init"
         end
 
         Bundler.with_clean_env do

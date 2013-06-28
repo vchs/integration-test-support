@@ -60,18 +60,6 @@ class CcngRunner < ComponentRunner
 
   private
 
-  def ensure_no_local_changes
-    unless `git status -s`.empty?
-      raise 'There are outstanding changes in cloud controller. Need to set NO_CHECKOUT env'
-    end
-  end
-
-  def ensure_no_local_commits(cc_branch)
-    if `git merge-base HEAD #{cc_branch}` != `git rev-parse HEAD`
-      raise 'There unpushed commits in cloud controller. Need to set NO_CHECKOUT env'
-    end
-  end
-
   def setup_ccng_orgs_and_spaces
     user_guid = '12345'
     @org_guid = ccng_post(

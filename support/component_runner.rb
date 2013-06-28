@@ -127,6 +127,17 @@ class ComponentRunner < Struct.new(:tmp_dir, :rspec_example)
   end
 
 
+  def ensure_no_local_changes
+    unless `git status -s`.empty?
+      raise 'There are outstanding changes in cloud controller. Need to set NO_CHECKOUT env'
+    end
+  end
+
+  def ensure_no_local_commits(branch)
+    if `git merge-base HEAD #{branch}` != `git rev-parse HEAD`
+      raise "There un-pushed commits when running #{self.class.name}. Need to set NO_CHECKOUT env"
+    end
+  end
 
   def client
     HTTPClient.new
