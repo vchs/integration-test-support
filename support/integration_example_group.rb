@@ -72,10 +72,6 @@ module IntegrationExampleGroup
     inst_data.fetch("metadata").fetch("guid")
   end
 
-  def user_guid
-    12345
-  end
-
   def plan_guid(service_name, plan_name)
     plans_path = service_response(service_name).fetch("entity").fetch("service_plans_url")
     plan_response(plan_name, plans_path).fetch('metadata').fetch('guid')
