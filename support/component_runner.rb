@@ -1,4 +1,5 @@
 require 'socket'
+require 'open3'
 require_relative 'ccng_client'
 
 class ComponentRunner < Struct.new(:tmp_dir, :rspec_example)
@@ -123,7 +124,13 @@ class ComponentRunner < Struct.new(:tmp_dir, :rspec_example)
   end
 
   def sh(cmd)
-    raise "Unable to run #{cmd} in #{Dir.pwd}" unless system(cmd)
+    Open3.popen2e(cmd) do |stdin, stdout_and_stderr, wait_thr|
+      unless wait_thr.value.success?
+        message = "Unable to run #{cmd.inspect} in #{Dir.pwd}.\n#{stdout_and_stderr.read}"
+        warn "ERROR: #{message}"
+        raise message
+      end
+    end
   end
 
 
