@@ -35,8 +35,12 @@ module IntegrationExampleGroup
         end
       end
       after :each do |example|
-        (example.example.metadata[:components] || []).reverse.each do |component|
-          component!(component).stop
+        begin
+          (example.example.metadata[:components] || []).reverse.each do |component|
+            component!(component).stop
+          end
+        ensure
+          ComponentRegistry.clear!
         end
       end
     end
@@ -51,13 +55,12 @@ module IntegrationExampleGroup
   end
 
   def component(name, rspec_example)
-    @components ||= {}
     FileUtils.mkdir_p(tmp_dir)
-    @components[name] ||= self.class.const_get("#{name.to_s.camelize}Runner").new(tmp_dir, rspec_example)
+    ComponentRegistry.register(name, self.class.const_get("#{name.to_s.camelize}Runner").new(tmp_dir, rspec_example))
   end
 
   def component!(name)
-    @components.fetch(name)
+    ComponentRegistry.fetch(name)
   end
 
   def provision_mysql_instance(name)
