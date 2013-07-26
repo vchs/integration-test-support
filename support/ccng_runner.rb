@@ -29,28 +29,29 @@ class CcngRunner < ComponentRunner
   def start
     checkout_ccng unless $checked_out
     FileUtils.mkdir_p("#{tmp_dir}/config")
-    database_file = "/tmp/cloud_controller.db"
+    database_file = File.join(tmp_dir, "cloud_controller.db")
     FileUtils.rm_f(database_file)
     Dir.chdir "#{tmp_dir}/cloud_controller_ng" do
       File.open("#{tmp_dir}/config/cloud_controller.yml", "w") do |f|
         f.write YAML.dump(YAML.load_file("config/cloud_controller.yml").merge({
+          "db" => {
+            "database" => "sqlite://#{database_file}",
+            "max_connections" => 32,
+            "pool_timeout" => 10,
+          },
           "logging" => {
             "file" => "#{tmp_dir}/log/cloud_controller.log",
-            "level" => "info",
-            "db" => {
-              "database" => "sqlite://#{database_file}",
-              "max_connections" => 32,
-              "pool_timeout" => 10,
-            }
-          }
+            "level" => "debug2",
+          },
         }))
       end
       Bundler.with_clean_env do
-        FileUtils.rm_f "/tmp/cloud_controller.db"
+        config_file_path = "#{tmp_dir}/config/cloud_controller.yml"
         puts "running bundle exec rake db:migrate"
-        sh "bundle exec rake db:migrate >> /dev/null"
-        sh %q{sqlite3 /tmp/cloud_controller.db 'INSERT INTO quota_definitions(guid, created_at, name, non_basic_services_allowed, total_services, memory_limit) VALUES("test_quota", "2010-01-01", "free", 1, 100, 1024)'}
-        add_pid Process.spawn "bundle exec ./bin/cloud_controller --config #{tmp_dir}/config/cloud_controller.yml", log_options(:cloud_controller)
+        db_migrate_log_options = log_options(:cc_db_migrate)
+        sh "CLOUD_CONTROLLER_NG_CONFIG=#{config_file_path} bundle exec rake db:migrate >> #{db_migrate_log_options[:out]} 2>> #{db_migrate_log_options[:err]}"
+        sh %Q{sqlite3 #{database_file} 'INSERT INTO quota_definitions(guid, created_at, name, non_basic_services_allowed, total_services, memory_limit) VALUES("test_quota", "2010-01-01", "free", 1, 100, 1024)'}
+        add_pid Process.spawn "bundle exec ./bin/cloud_controller --config #{config_file_path}", log_options(:cloud_controller)
       end
     end
     wait_for_http_ready("CCNG", 8181)
