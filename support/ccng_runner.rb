@@ -3,6 +3,64 @@ require_relative 'component_runner'
 class CcngRunner < ComponentRunner
   attr_reader :org_guid, :space_guid
 
+  def start
+    checkout_ccng unless $checked_out
+    Dir.chdir "#{tmp_dir}/cloud_controller_ng" do
+      Bundler.with_clean_env do
+        write_custom_cc_config_file
+        prepare_cc_database
+        add_pid Process.spawn "bundle exec ./bin/cloud_controller --config #{custom_cc_config_location}", log_options(:cloud_controller)
+      end
+    end
+    wait_for_http_ready("CCNG", 8181)
+    setup_ccng_orgs_and_spaces
+  end
+
+  def stop
+    super
+  ensure
+    tear_down_cc_database
+  end
+
+  private
+
+  def write_custom_cc_config_file
+    FileUtils.mkdir_p("#{tmp_dir}/config")
+    File.open(custom_cc_config_location, "w") do |f|
+      f.write YAML.dump(YAML.load_file("config/cloud_controller.yml").merge({
+        "db" => {
+          "database" => "mysql2://root:@localhost:3306/#{cc_database_name}",
+          "max_connections" => 32,
+          "pool_timeout" => 10,
+        },
+        "logging" => {
+          "file" => "#{tmp_dir}/log/cloud_controller.log",
+          "level" => "debug2",
+        },
+      }))
+    end
+  end
+
+  def prepare_cc_database
+    sh %Q{ echo 'CREATE DATABASE #{cc_database_name}' | mysql -u root }
+    db_migrate_log_options = log_options(:cc_db_migrate)
+    sh "CLOUD_CONTROLLER_NG_CONFIG=#{custom_cc_config_location} bundle exec rake db:migrate >> #{db_migrate_log_options[:out]} 2>> #{db_migrate_log_options[:err]}"
+    insert_quota_def_statement = 'INSERT INTO quota_definitions(guid, created_at, name, non_basic_services_allowed, total_services, memory_limit) VALUES("test_quota", "2010-01-01", "free", 1, 100, 1024)'
+    sh %Q{echo '#{insert_quota_def_statement}' | mysql -u root #{cc_database_name}}
+  end
+
+  def tear_down_cc_database
+    sh %Q{ echo 'DROP DATABASE IF EXISTS #{cc_database_name}' | mysql -u root }
+  end
+
+  def cc_database_name
+    @cc_database_name ||= "ccng_#{SecureRandom.uuid.gsub('-','')}"
+  end
+
+  def custom_cc_config_location
+    "#{tmp_dir}/config/cloud_controller.yml"
+  end
+
   def checkout_ccng
     cc_branch = ENV["CC_BRANCH"] || "origin/master"
 
@@ -25,41 +83,6 @@ class CcngRunner < ComponentRunner
       $checked_out = true
     end
   end
-
-  def start
-    checkout_ccng unless $checked_out
-    FileUtils.mkdir_p("#{tmp_dir}/config")
-    database_file = File.join(tmp_dir, "cloud_controller.db")
-    FileUtils.rm_f(database_file)
-    Dir.chdir "#{tmp_dir}/cloud_controller_ng" do
-      File.open("#{tmp_dir}/config/cloud_controller.yml", "w") do |f|
-        f.write YAML.dump(YAML.load_file("config/cloud_controller.yml").merge({
-          "db" => {
-            "database" => "sqlite://#{database_file}",
-            "max_connections" => 32,
-            "pool_timeout" => 10,
-          },
-          "logging" => {
-            "file" => "#{tmp_dir}/log/cloud_controller.log",
-            "level" => "debug2",
-          },
-        }))
-      end
-      Bundler.with_clean_env do
-        config_file_path = "#{tmp_dir}/config/cloud_controller.yml"
-        puts "running bundle exec rake db:migrate"
-        db_migrate_log_options = log_options(:cc_db_migrate)
-        sh "CLOUD_CONTROLLER_NG_CONFIG=#{config_file_path} bundle exec rake db:migrate >> #{db_migrate_log_options[:out]} 2>> #{db_migrate_log_options[:err]}"
-        sh %Q{sqlite3 #{database_file} 'INSERT INTO quota_definitions(guid, created_at, name, non_basic_services_allowed, total_services, memory_limit) VALUES("test_quota", "2010-01-01", "free", 1, 100, 1024)'}
-        add_pid Process.spawn "bundle exec ./bin/cloud_controller --config #{config_file_path}", log_options(:cloud_controller)
-      end
-    end
-    wait_for_http_ready("CCNG", 8181)
-
-    setup_ccng_orgs_and_spaces
-  end
-
-  private
 
   def setup_ccng_orgs_and_spaces
     user_guid = '12345'
