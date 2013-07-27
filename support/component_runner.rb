@@ -10,7 +10,6 @@ class ComponentRunner < Struct.new(:tmp_dir, :rspec_example)
   end
 
   def stop
-    puts "Killing #{self.class.name}..."
     pids.reverse.each do |pid|
       begin
         Timeout::timeout(3) do
@@ -18,11 +17,11 @@ class ComponentRunner < Struct.new(:tmp_dir, :rspec_example)
           Process.wait(pid)
         end
       rescue Timeout::Error
+        puts "'Kill -9'ing #{self.class.name}..."
         Process.kill("KILL", pid) rescue Errno::ESRCH
       end
     end
     clear_pids
-    puts "Killing threads #{self.class.name}..."
     threads.reverse.each do |thread|
       Thread.kill thread
     end
