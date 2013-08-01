@@ -13,4 +13,9 @@ module ComponentRegistry
   def self.clear!
     @components = {}
   end
+
+  def self.reset!
+    @components.values.reverse.each { |component| component.stop }
+    clear!
+  end
 end

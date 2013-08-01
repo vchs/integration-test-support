@@ -34,15 +34,7 @@ module IntegrationExampleGroup
           instance.start
         end
       end
-      after :each do |example|
-        begin
-          (example.example.metadata[:components] || []).reverse.each do |component|
-            component!(component).stop
-          end
-        ensure
-          ComponentRegistry.clear!
-        end
-      end
+      after(:each) { ComponentRegistry.reset! }
     end
   end
 
