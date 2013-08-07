@@ -37,6 +37,11 @@ class CcngRunner < ComponentRunner
           "file" => "#{tmp_dir}/log/cloud_controller.log",
           "level" => "debug2",
         },
+        uaa: {
+          url: "http://localhost:7777/",
+          resource_id: "cloud_controller",
+          symmetric_secret: "tokensecret"
+        }
       }))
     end
   end
