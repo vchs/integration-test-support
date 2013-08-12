@@ -59,7 +59,7 @@ class CcngRunner < ComponentRunner
   end
 
   def cc_database_name
-    @cc_database_name ||= "ccng_#{SecureRandom.uuid.gsub('-','')}"
+    @cc_database_name ||= "ccng"
   end
 
   def custom_cc_config_location
