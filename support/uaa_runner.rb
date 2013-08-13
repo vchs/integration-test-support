@@ -12,7 +12,7 @@ class UaaRunner < ComponentRunner
     ensure_uaa_database_exists
     setup_environment_variables
     run_uaa
-    wait_for_tcp_ready('UAA server', port, 50)
+    wait_for_tcp_ready('UAA server', port, 200)
   end
 
   def port
