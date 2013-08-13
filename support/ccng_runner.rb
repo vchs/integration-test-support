@@ -47,15 +47,20 @@ class CcngRunner < ComponentRunner
   end
 
   def prepare_cc_database
-    sh %Q{ echo 'CREATE DATABASE #{cc_database_name}' | mysql -u root }
+    mysql "DROP DATABASE IF EXISTS #{cc_database_name}"
+    mysql "CREATE DATABASE #{cc_database_name}"
     db_migrate_log_options = log_options(:cc_db_migrate)
     sh "CLOUD_CONTROLLER_NG_CONFIG=#{custom_cc_config_location} bundle exec rake db:migrate >> #{db_migrate_log_options[:out]} 2>> #{db_migrate_log_options[:err]}"
     insert_quota_def_statement = 'INSERT INTO quota_definitions(guid, created_at, name, non_basic_services_allowed, total_services, memory_limit) VALUES("test_quota", "2010-01-01", "free", 1, 100, 1024)'
-    sh %Q{echo '#{insert_quota_def_statement}' | mysql -u root #{cc_database_name}}
+    mysql insert_quota_def_statement, cc_database_name
   end
 
   def tear_down_cc_database
-    sh %Q{ echo 'DROP DATABASE IF EXISTS #{cc_database_name}' | mysql -u root }
+    mysql "DROP DATABASE IF EXISTS #{cc_database_name}"
+  end
+
+  def mysql(command, database=nil)
+    sh "mysql -u root -e '#{command}' #{database}"
   end
 
   def cc_database_name
