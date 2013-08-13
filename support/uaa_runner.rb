@@ -1,3 +1,4 @@
+require_relative 'component_runner'
 require_relative 'integration_example_group'
 
 class UaaRunner < ComponentRunner
