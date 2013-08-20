@@ -1,4 +1,6 @@
 GEM
+  remote: https://rubygems.org/
+  remote: https://s3.amazonaws.com/bosh-jenkins-gems/
   specs:
     activesupport (3.2.13)
       i18n (= 0.6.1)
@@ -18,6 +20,7 @@ GEM
       json_pure (>= 1.7.3)
       thin (>= 1.4.1)
     rack (1.5.2)
+    rake (10.1.0)
     rspec (2.13.0)
       rspec-core (~> 2.13.0)
       rspec-expectations (~> 2.13.0)
@@ -40,5 +43,6 @@ DEPENDENCIES
   cf-uaa-lib
   httpclient
   nats
+  rake
   rspec
   yajl-ruby
