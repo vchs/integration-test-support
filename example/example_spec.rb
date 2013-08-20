@@ -4,7 +4,7 @@ describe 'test that requires CF components', type: :integration, :components => 
   include CcngClient
 
   it 'start nats and ccng as required' do
-    component(:nats).should be
+    component!(:nats).should be
     ccng_get('/v2/services').should be
   end
 end
