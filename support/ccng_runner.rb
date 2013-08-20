@@ -76,7 +76,10 @@ class CcngRunner < ComponentRunner
 
     Dir.chdir tmp_dir do
       FileUtils.mkdir_p "log"
-      sh "git clone --recursive git://github.com/cloudfoundry/cloud_controller_ng.git" unless Dir.exist?("cloud_controller_ng")
+      unless Dir.exist?("cloud_controller_ng")
+        sh "git clone --recursive git://github.com/cloudfoundry/cloud_controller_ng.git"
+        puts "cloning CCNG repository, this may take a while..."
+      end
       Dir.chdir "cloud_controller_ng" do
         if ENV['NO_CHECKOUT'].nil? || ENV['NO_CHECKOUT'].empty?
           `git fetch`
