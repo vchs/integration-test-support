@@ -22,27 +22,35 @@ class CcngRunner < ComponentRunner
     tear_down_cc_database
   end
 
+  def org_name
+    'test_org'
+  end
+
+  def space_name
+    'test_space'
+  end
+
   private
 
   def write_custom_cc_config_file
     FileUtils.mkdir_p("#{tmp_dir}/config")
     File.open(custom_cc_config_location, "w") do |f|
       f.write YAML.dump(YAML.load_file("config/cloud_controller.yml").merge({
-        "db" => {
-          "database" => "mysql2://root:@localhost:3306/#{cc_database_name}",
-          "max_connections" => 32,
-          "pool_timeout" => 10,
-        },
-        "logging" => {
-          "file" => "#{tmp_dir}/log/cloud_controller.log",
-          "level" => "debug2",
-        },
-        uaa: {
-          url: "http://localhost:7777/",
-          resource_id: "cloud_controller",
-          symmetric_secret: "tokensecret"
-        }
-      }))
+                                                                              "db" => {
+                                                                                "database" => "mysql2://root:@localhost:3306/#{cc_database_name}",
+                                                                                "max_connections" => 32,
+                                                                                "pool_timeout" => 10,
+                                                                              },
+                                                                              "logging" => {
+                                                                                "file" => "#{tmp_dir}/log/cloud_controller.log",
+                                                                                "level" => "debug2",
+                                                                              },
+                                                                              uaa: {
+                                                                                url: "http://localhost:7777/",
+                                                                                resource_id: "cloud_controller",
+                                                                                symmetric_secret: "tokensecret"
+                                                                              }
+                                                                            }))
     end
   end
 
@@ -101,12 +109,12 @@ class CcngRunner < ComponentRunner
     user_guid = '12345'
     @org_guid = ccng_post(
       "/v2/organizations",
-      {name: 'test_org', user_guids: [user_guid]}
+      {name: org_name, user_guids: [user_guid]}
     ).fetch("metadata").fetch("guid")
 
     @space_guid = ccng_post(
       "/v2/spaces",
-      {name: 'test_space', organization_guid: @org_guid}
+      {name: space_name, organization_guid: @org_guid}
     ).fetch("metadata").fetch("guid")
 
     ccng_put("/v2/spaces/#{@space_guid}/developers/#{user_guid}", {})
