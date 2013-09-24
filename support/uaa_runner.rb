@@ -33,7 +33,11 @@ class UaaRunner < ComponentRunner
 
   def download_file_from_s3(file_name, expected_checksum)
     Dir.chdir(tmp_dir) do
-      `wget -q #{S3_BUCKET_URL}/#{file_name}` unless File.exist?(file_name)
+      unless File.exist?(file_name)
+        print "Downloading #{file_name}..."
+        `wget -q #{S3_BUCKET_URL}/#{file_name}`
+        puts 'done!'
+      end
 
       actual_checksum = `md5 -q #{file_name}`.strip
       unless actual_checksum == expected_checksum
