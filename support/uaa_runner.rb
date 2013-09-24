@@ -4,11 +4,13 @@ require_relative 'integration_example_group'
 class UaaRunner < ComponentRunner
   S3_BUCKET_URL = 'https://s3.amazonaws.com/services-blobs'
   JETTY_FILE_NAME = 'jetty-runner.jar'
-  UAA_FILE_NAME='uaa-1.4.0.war'
+  JETTY_CHECKSUM = 'd40d36c3e8473df607f3458691e9f778'
+  UAA_FILE_NAME = 'uaa-1.4.0.war'
+  UAA_CHECKSUM = 'd4880876e69b6f4f97b92e761d479257'
 
   def start
-    download_file_from_s3(JETTY_FILE_NAME)
-    download_file_from_s3(UAA_FILE_NAME)
+    download_file_from_s3(JETTY_FILE_NAME, JETTY_CHECKSUM)
+    download_file_from_s3(UAA_FILE_NAME, UAA_CHECKSUM)
     ensure_uaa_database_exists
     setup_environment_variables
     run_uaa
@@ -29,9 +31,14 @@ class UaaRunner < ComponentRunner
     IntegrationExampleGroup.tmp_dir
   end
 
-  def download_file_from_s3(file_name)
+  def download_file_from_s3(file_name, expected_checksum)
     Dir.chdir(tmp_dir) do
       `wget -q #{S3_BUCKET_URL}/#{file_name}` unless File.exist?(file_name)
+
+      actual_checksum = `md5 -q #{file_name}`.strip
+      unless actual_checksum == expected_checksum
+        raise "Checksum for #{file_name} does not match. Expected #{expected_checksum}, received #{actual_checksum}."
+      end
     end
   end
 
