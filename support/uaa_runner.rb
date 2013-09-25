@@ -39,7 +39,7 @@ class UaaRunner < ComponentRunner
         puts 'done!'
       end
 
-      actual_checksum = `md5 -q #{file_name}`.strip
+      actual_checksum = Digest::MD5.hexdigest(File.read(file_name))
       unless actual_checksum == expected_checksum
         raise "Checksum for #{file_name} does not match. Expected #{expected_checksum}, received #{actual_checksum}."
       end
