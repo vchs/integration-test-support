@@ -98,7 +98,7 @@ class CcngRunner < ComponentRunner
 
         Bundler.with_clean_env do
           puts "running bundle install"
-          sh "bundle install >> #{tmp_dir}/log/bundle.out"
+          sh "bundle install --without development >> #{tmp_dir}/log/cloud_controller__bundle.out"
         end
       end
       $checked_out = true
