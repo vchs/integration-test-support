@@ -1,21 +1,28 @@
 module ComponentRegistry
-  def self.register(name, instance)
-    @components ||= {}
-    raise "Component #{name} already registered" if @components.has_key?(name)
-    @components[name] = instance
-    instance
-  end
+  class << self
+    def register(name, instance)
+      raise "Component #{name} already registered" if components.has_key?(name)
+      components[name] = instance
+      instance
+    end
 
-  def self.fetch(name)
-    @components.fetch(name)
-  end
+    def fetch(name)
+      components.fetch(name)
+    end
 
-  def self.clear!
-    @components = {}
-  end
+    def clear!
+      @components = {}
+    end
 
-  def self.reset!
-    @components.values.reverse.each { |component| component.stop }
-    clear!
+    def reset!
+      components.values.reverse.each { |component| component.stop }
+      clear!
+    end
+
+    private
+
+    def components
+      @components ||= {}
+    end
   end
 end
