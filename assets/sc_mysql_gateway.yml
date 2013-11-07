@@ -1,0 +1,69 @@
+---
+cloud_controller_uri: http://127.0.0.1:3000
+service:
+  name: mysql
+  unique_id: 'mysql_service_unique_id'
+  version: "5.6"
+  description: 'MySQL database'
+  plans:
+    '200':
+      unique_id: 'core_mysql_200'
+      description: 'Shared service instance, 1MB memory, 10MB storage, 10 connections'
+      extra: 'extra information for free tier plan'
+      free: true
+  default_plan: '200'
+  provider_name: 'Sun'
+  logo_url: 'http://example.com/pretty_pikature.gif'
+  blurb: 'Sun Defunct MySQL Relational Database Service'
+  tags: ['relational']
+  timeout: 10
+  supported_versions: ['5.6']
+  version_aliases:
+    'current': '5.6'
+ip_route: localhost
+port: 8383
+z_interval: 1
+#proxy:
+#   host: proxy
+#   port: 8080
+#   keepalive: true
+index: 0
+token: "0xdeadbeef"
+logging:
+  level: debug
+mbus: nats://localhost:4222
+pid: /tmp/mysql_integration_test/mysql_gateway.pid
+node_timeout: 8
+resque:
+  host: localhost
+  port: 5454
+download_url_template: http://dl.vcap.me/serialized/%{service}/%{name}/snapshots/%{snapshot_id}?token=%{token}
+
+plan_management:
+  plans:
+    free:
+      low_water: 10
+      high_water: 180
+      lifecycle:
+        snapshot:
+          quota: 5
+        serialization: enable
+        job: enable
+      #allow_over_provisioning: false
+    '100':
+      high_water: 900
+      low_water: 100
+      allow_over_provisioning: false
+      lifecycle:
+        serialization: enable
+        snapshot:
+          quota: 1
+        job: enable
+
+# z_interval: 30
+# check_orphan_interval: 3600
+# double_check_orphan_interval: 300
+service_auth_tokens:
+  mysql_core: ""
+cc_api_version: scv1
+provisioner_version: v3
