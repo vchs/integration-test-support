@@ -7,6 +7,7 @@ end
 
 module IntegrationExampleGroup
   include CcngClient
+  include ScClient
 
   def self.tmp_dir
     @@tmp_dir or raise "No tmp_dir set. Please set one with #{self.name}.tmp_dir="

@@ -1,9 +1,11 @@
 require 'socket'
 require 'open3'
 require_relative 'ccng_client'
+require_relative 'sc_client'
 
 class ComponentRunner < Struct.new(:tmp_dir, :rspec_example)
   include CcngClient
+  include ScClient
 
   def start
     raise NotImplementedError
@@ -79,11 +81,11 @@ class ComponentRunner < Struct.new(:tmp_dir, :rspec_example)
     File.expand_path(File.join(root, 'assets', file_name))
   end
 
-  def wait_for_http_ready(label, port)
+  def wait_for_http_ready(label, port, path='info')
     print "Waiting for #{label}..."
     retries = 30
     begin
-      response = client.get("http://localhost:#{port}/info")
+      response = client.get("http://localhost:#{port}/#{path}")
       raise "Failed to connect, status: #{response.status}" unless response.ok?
       puts "ready!"
     rescue
