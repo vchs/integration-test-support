@@ -27,14 +27,16 @@ module IntegrationExampleGroup
   def self.included(base)
     base.instance_eval do
       metadata[:type] = :integration
+      hook_on = metadata[:hook_on] || :each
+      coms = metadata[:components] || []
       let(:mysql_root_connection) { component!(:mysql).mysql_root_connection }
-      before :each do |example|
-        (example.example.metadata[:components] || []).each do |component|
-          instance = component(component, example.example)
+      before hook_on do |example|
+        coms.each do |component|
+          instance = component(component, example)
           instance.start
         end
       end
-      after(:each) { ComponentRegistry.reset! }
+      after(hook_on) { ComponentRegistry.reset! }
     end
   end
 
