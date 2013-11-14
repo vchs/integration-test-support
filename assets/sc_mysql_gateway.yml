@@ -11,6 +11,7 @@ service:
       description: 'Shared service instance, 1MB memory, 10MB storage, 10 connections'
       extra: 'extra information for free tier plan'
       free: true
+      active: true
   default_plan: '200'
   provider_name: 'Sun'
   logo_url: 'http://example.com/pretty_pikature.gif'
@@ -50,7 +51,7 @@ plan_management:
         serialization: enable
         job: enable
       #allow_over_provisioning: false
-    '100':
+    '200':
       high_water: 900
       low_water: 100
       allow_over_provisioning: false
