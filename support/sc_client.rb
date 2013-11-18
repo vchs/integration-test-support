@@ -31,12 +31,19 @@ module ScClient
 
   private
 
+  def gen_token(user, pass)
+    auth_string = "#{user}:#{pass}"
+    encoded = Base64.encode64(auth_string)
+    "Basic #{encoded}"
+  end
+
   def make_sc_request(method, resource_path, body_hash=nil)
     uri = URI.parse("http://127.0.0.1:3000/")
     uri.path = resource_path
     header = {
       'Content-Type' => 'application/json',
       'Accept' => 'application/json',
+      'Authorization' => gen_token("a@b.c", "abc"),
     }
     response = client.public_send(method,
                                   uri,

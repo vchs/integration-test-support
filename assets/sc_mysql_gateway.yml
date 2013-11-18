@@ -68,3 +68,4 @@ service_auth_tokens:
   mysql_core: ""
 cc_api_version: scv1
 provisioner_version: v3
+auth_key: "gateway@test.org:gateway"
