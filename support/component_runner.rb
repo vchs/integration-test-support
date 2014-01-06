@@ -1,11 +1,9 @@
 require 'socket'
 require 'open3'
 require_relative 'ccng_client'
-require_relative 'sc_client'
 
 class ComponentRunner < Struct.new(:tmp_dir, :rspec_example)
   include CcngClient
-  include ScClient
 
   def start
     raise NotImplementedError

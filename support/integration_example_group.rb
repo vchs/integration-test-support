@@ -1,13 +1,12 @@
 require "uaa/token_coder"
 require 'fileutils'
 require 'active_support/core_ext'
-Dir.glob(File.join(File.dirname(__FILE__), '*')).each do |file|
+Dir.glob(File.join(File.dirname(__FILE__), '*.rb')).each do |file|
   require file
 end
 
 module IntegrationExampleGroup
   include CcngClient
-  include ScClient
 
   def self.tmp_dir
     @@tmp_dir or raise "No tmp_dir set. Please set one with #{self.name}.tmp_dir="
