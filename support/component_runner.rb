@@ -1,29 +1,39 @@
 require 'socket'
 require 'open3'
 require_relative 'ccng_client'
-require_relative 'sc_client'
+require 'sys/proctable'
 
 class ComponentRunner < Struct.new(:tmp_dir, :rspec_example)
   include CcngClient
-  include ScClient
 
   def start
     raise NotImplementedError
   end
 
+  def kill_process(pid)
+    begin
+      Process.getpgid(pid)
+      Timeout::timeout(3) do
+        Process.kill "TERM", pid
+        Process.wait(pid) if pids.include? pid
+      end
+    rescue Timeout::Error
+      puts "'Kill -9 #{pid}..."
+      Process.kill("KILL", pid) rescue Errno::ESRCH
+    end
+  end
+
   def stop
     pids.reverse.each do |pid|
-      begin
-        Timeout::timeout(3) do
-          Process.kill "TERM", pid
-          Process.wait(pid)
-        end
-      rescue Timeout::Error
-        puts "'Kill -9'ing #{self.class.name}..."
-        Process.kill("KILL", pid) rescue Errno::ESRCH
-      end
+      # kill childs
+      Sys::ProcTable.ps.select do |pe|
+        pe.ppid == pid
+      end.each { |pe| kill_process(pe.pid) }
+      # kill parent
+      kill_process(pid)
     end
     clear_pids
+
     threads.reverse.each do |thread|
       Thread.kill thread
     end
