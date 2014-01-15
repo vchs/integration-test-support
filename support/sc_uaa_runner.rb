@@ -7,8 +7,6 @@ class ScUaaRunner < ComponentRunner
                           "#{tmp_dir}/uaa.war --path '/uaa'",
                           log_options(:sc_uaa))
     wait_for_tcp_ready('UAA server', 8080, 200)
-    Bundler.with_clean_env do
-      sh "bundle exec #{File.expand_path("..", __FILE__)}/poststart_uaa.sh"
-    end
+    sh "#{File.expand_path("..", __FILE__)}/poststart_uaa.sh"
   end
 end
