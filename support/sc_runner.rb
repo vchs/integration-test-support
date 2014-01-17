@@ -6,7 +6,7 @@ class ScRunner < ComponentRunner
     Dir.chdir "#{tmp_dir}/service_controller" do
       Bundler.with_clean_env do
         prepare_sc
-        add_pid Process.spawn "bundle exec ./bin/rails server", log_options(:sc)
+        add_pid Process.spawn "./bin/rails server", log_options(:sc)
       end
     end
     wait_for_http_ready("SC", 3000, '')
@@ -22,7 +22,7 @@ class ScRunner < ComponentRunner
 
   def prepare_sc
     Dir.chdir "#{tmp_dir}/service_controller" do
-      sh "bundle exec rake db:migrate"
+      sh "rake db:migrate"
     end
   end
 
