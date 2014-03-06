@@ -1,3 +1,5 @@
+# THIS REPO HAS BEEN DEPRECATED
+
 integration-test-support
 ========================
 Shared code base to run Cloud Foundry integration tests, which involves many CF components.
